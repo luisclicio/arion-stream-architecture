@@ -1,0 +1,31 @@
+volumes:
+  broker_data:
+  storage_data:
+
+services:
+  broker:
+    image: arionstream/broker:latest
+    build: ./services/broker
+    restart: unless-stopped
+    ports:
+      - 15672:15672
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${BROKER_RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - broker_data:/var/lib/rabbitmq/
+
+  storage:
+    image: arionstream/storage:latest
+    build: ./services/storage
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=${STORAGE_MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${STORAGE_MINIO_ROOT_PASSWORD}
+      - MINIO_REGION_NAME=us-east-1
+    volumes:
+      - storage_data:/data

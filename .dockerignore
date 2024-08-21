@@ -1,0 +1,4 @@
+.git
+__pyenv__
+node_modules
+.env
