@@ -1,8 +1,46 @@
+x-stream-adapter: &stream-adapter
+  image: arionstream/stream-adapter:latest
+  build: ./services/stream-adapter
+  restart: unless-stopped
+  expose:
+    - 5000
+
+x-stream-processor-a: &stream-processor-a
+  image: arionstream/stream-processor-a:latest
+  build: ./services/stream-processors/base
+  restart: unless-stopped
+
+x-stream-processor-b: &stream-processor-b
+  image: arionstream/stream-processor-b:latest
+  build: ./services/stream-processors/base
+  restart: unless-stopped
+
 volumes:
   broker_data:
   storage_data:
 
 services:
+  stream-adapter-1:
+    <<: *stream-adapter
+    environment:
+      - SOURCE_URI=/videos/video.mp4
+    volumes:
+      - ./videos:/videos
+
+  stream-processor-a1:
+    <<: *stream-processor-a
+    environment:
+      - SENDER_URI=stream-adapter-1:5000
+    depends_on:
+      - stream-adapter-1
+
+  stream-processor-b1:
+    <<: *stream-processor-b
+    environment:
+      - SENDER_URI=stream-adapter-1:5000
+    depends_on:
+      - stream-adapter-1
+
   broker:
     image: arionstream/broker:latest
     build: ./services/broker
