@@ -1,5 +1,6 @@
 import os
 
+from src.helpers.exceptions import SigIntException, SigTermException
 from src.helpers.logger import get_logger
 from src.libs.stream import StreamReceiver
 
@@ -18,7 +19,7 @@ if __name__ == '__main__':
 
             # Process the image
             print('Received image from sender:', sender_id)
-    except (KeyboardInterrupt, SystemExit):
+    except (KeyboardInterrupt, SystemExit, SigTermException, SigIntException):
         logger.error('Exit due to interrupt')
     except Exception as error:
         logger.error('Error with no exception handler:', error)
