@@ -22,7 +22,7 @@ RUN poetry run pip install --upgrade pip setuptools wheel
 FROM common AS development
 RUN poetry install --no-root
 COPY . .
-CMD ["poetry", "run", "python", "src/main.py"]
+CMD ["poetry", "run", "python", "-m", "src.main"]
 
 FROM common AS production
 RUN poetry install --no-root --without dev

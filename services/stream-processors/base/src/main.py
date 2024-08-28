@@ -2,26 +2,28 @@ import os
 
 from src.helpers.exceptions import SigIntException, SigTermException
 from src.helpers.logger import get_logger
-from src.libs.stream import StreamReceiver
+from src.libs.stream import StreamReceiver, StreamReceiverController
+from src.services.stream import StreamHandler
 
 if __name__ == '__main__':
     SENDER_URI = os.getenv('SENDER_URI')
 
-    stream_receiver = StreamReceiver(SENDER_URI).start()
     logger = get_logger('Main')
 
+    logger.info('Starting stream processor...')
+
+    stream_receiver = StreamReceiver(SENDER_URI).start()
+    stream_handler = StreamHandler()
+    stream_receiver_controller = StreamReceiverController(
+        stream_receiver, stream_handler
+    )
+
     try:
-        while True:
-            sender_id, image = stream_receiver.receive()
-
-            if image is None:
-                break
-
-            # Process the image
-            print('Received image from sender:', sender_id)
+        stream_receiver_controller.start()
     except (KeyboardInterrupt, SystemExit, SigTermException, SigIntException):
-        logger.error('Exit due to interrupt')
+        logger.error('Exiting due to interrupt...')
     except Exception as error:
         logger.error('Error with no exception handler:', error)
     finally:
-        stream_receiver.stop()
+        stream_receiver_controller.stop()
+        logger.info('Stream processor stopped')

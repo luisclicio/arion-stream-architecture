@@ -12,7 +12,9 @@ class StreamSender:
         self._port = port
         self._sender_id = sender_id
         self._stream = VideoGear(source=self._source_uri).start()
-        self._sender = imagezmq.ImageSender(connect_to=f'tcp://*:{5000}', REQ_REP=False)
+        self._sender = imagezmq.ImageSender(
+            connect_to=f'tcp://*:{self._port}', REQ_REP=False
+        )
         self.logger.info('Sender ready to transmit images')
 
     def start(self):

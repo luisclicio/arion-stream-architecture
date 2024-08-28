@@ -24,6 +24,7 @@ services:
     <<: *stream-adapter
     environment:
       - SOURCE_URI=/videos/video.mp4
+      - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - ./videos:/videos
 
@@ -31,6 +32,7 @@ services:
     <<: *stream-processor-a
     environment:
       - SENDER_URI=stream-adapter-1:5000
+      - LOG_LEVEL=${LOG_LEVEL}
     depends_on:
       - stream-adapter-1
 
@@ -38,6 +40,7 @@ services:
     <<: *stream-processor-b
     environment:
       - SENDER_URI=stream-adapter-1:5000
+      - LOG_LEVEL=${LOG_LEVEL}
     depends_on:
       - stream-adapter-1
 
