@@ -1,3 +1,8 @@
+x-depends-on-broker: &depends-on-broker
+  broker:
+    condition: service_healthy
+    restart: true
+
 x-stream-adapter: &stream-adapter
   image: arionstream/stream-adapter:latest
   build: ./services/stream-adapter
@@ -23,26 +28,36 @@ services:
   stream-adapter-1:
     <<: *stream-adapter
     environment:
-      - SOURCE_URI=/videos/video.mp4
+      - SOURCE_URI=/dev/video0 # Can be a video file (/videos/video.mp4), webcam, or external camera
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - ./videos:/videos
+      - ./videos:/videos # Used to access local video files
+    devices:
+      - /dev/video0:/dev/video0 # Used to access the webcam
 
   stream-processor-a1:
     <<: *stream-processor-a
     environment:
       - SENDER_URI=stream-adapter-1:5000
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
       - LOG_LEVEL=${LOG_LEVEL}
     depends_on:
-      - stream-adapter-1
+      <<: *depends-on-broker
+      stream-adapter-1:
+        condition: service_started
 
   stream-processor-b1:
     <<: *stream-processor-b
     environment:
       - SENDER_URI=stream-adapter-1:5000
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
       - LOG_LEVEL=${LOG_LEVEL}
     depends_on:
-      - stream-adapter-1
+      <<: *depends-on-broker
+      stream-adapter-1:
+        condition: service_started
 
   broker:
     image: arionstream/broker:latest
