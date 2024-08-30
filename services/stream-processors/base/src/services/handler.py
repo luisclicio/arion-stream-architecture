@@ -1,9 +1,8 @@
-import time
-
 import numpy as np
 
 from src.helpers.logger import get_logger
 from src.libs.stream import StreamHandlerBase
+from src.services.vision import vision_model
 
 
 class StreamHandler(StreamHandlerBase):
@@ -19,4 +18,12 @@ class StreamHandler(StreamHandlerBase):
         """
         # Process the image
         self.logger.debug(f'Received image from sender: {sender_id}')
-        time.sleep(0.05)  # Simulate processing time
+
+        prediction, processed_image = vision_model.predict(image)
+
+        if prediction['people_detected']:
+            self.logger.info(
+                f'PEOPLE DETECTED: Count: {prediction["people_count"]} - Precision: {prediction["precision"]:.2%}'
+            )
+
+            # Can save the processed image to a file, send it to another service, etc.

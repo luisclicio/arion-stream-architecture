@@ -3,7 +3,7 @@ import os
 from src.helpers.exceptions import SigIntException, SigTermException
 from src.helpers.logger import get_logger
 from src.libs.stream import StreamReceiver, StreamReceiverController
-from src.services.stream import StreamHandler
+from src.services.handler import StreamHandler
 
 if __name__ == '__main__':
     SENDER_URI = os.getenv('SENDER_URI')
