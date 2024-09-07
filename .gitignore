@@ -1,5 +1,6 @@
 __pyenv__
 node_modules
+dist
 .env
 videos/*
 !videos/.gitkeep
