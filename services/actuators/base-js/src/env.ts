@@ -1,16 +1,19 @@
 import { z } from 'zod';
 
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('development'),
   LOG_LEVEL: z
-    .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
-    .transform((value) => value.toLowerCase())
+    .custom<LogLevel>((value) => {
+      return ['trace', 'debug', 'info', 'warn', 'error', 'fatal'].includes(
+        String(value).toLowerCase(),
+      );
+    }, 'Invalid log level')
     .default('info'),
 
-  BROKER_HOST: z.string().default('localhost'),
-  BROKER_PORT: z.coerce.number().default(5672),
-  BROKER_USER: z.string().min(1),
-  BROKER_PASSWORD: z.string().min(1),
+  BROKER_RABBITMQ_CONNECTION_URI: z.string().url(),
+  BROKER_RABBITMQ_EXCHANGE_NAME: z.string().default('arion'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -32,6 +32,7 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.10.0",
+    "@types/amqplib": "^0.10.5",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^22.5.4",
@@ -46,6 +47,7 @@
     "typescript-eslint": "^8.4.0"
   },
   "dependencies": {
+    "amqplib": "^0.10.4",
     "pino": "^9.4.0",
     "zod": "^3.23.8"
   }
