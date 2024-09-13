@@ -1,0 +1,54 @@
+{
+  "name": "classifier-base-js",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch src/index.ts",
+    "build": "tsup",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "check:type": "tsc --noEmit",
+    "check:type:watch": "tsc --noEmit --watch"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "tsup": {
+    "entry": [
+      "src/**/*.ts"
+    ],
+    "bundle": false,
+    "clean": true,
+    "format": [
+      "esm"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.10.0",
+    "@types/amqplib": "^0.10.5",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^22.5.4",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.9.0",
+    "pino-pretty": "^11.2.2",
+    "prettier": "^3.3.3",
+    "tsup": "^8.2.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.4.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  }
+}

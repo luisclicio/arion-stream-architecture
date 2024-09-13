@@ -85,10 +85,13 @@ class StreamHandler(StreamHandlerBase):
                 routing_key=routing_key,
                 data={
                     'timestamp': datetime.datetime.now(datetime.UTC).isoformat(),
-                    'device_id': sender_id,
-                    'vision': {
-                        'people_detected': prediction['people_detected'],
-                        'people_count': prediction['people_count'],
+                    'deviceId': sender_id,
+                    'model': {
+                        'name': 'people_detector',
+                    },
+                    'data': {
+                        'peopleDetected': prediction['people_detected'],
+                        'peopleCount': prediction['people_count'],
                         'precision': prediction['precision'],
                     },
                 },
