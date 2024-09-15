@@ -25,10 +25,10 @@ The next figure illustrates the system's architecture.
 ## Main Technologies
 
 - Stream Adapter: Python, OpenCV, VidGear, ImageZMQ, ZeroMQ Protocol
-- Stream Processor: Python, OpenCV, VidGear, ImageZMQ, ZeroMQ Protocol, AMPQ Protocol
-- Broker: RabbitMQ
-- Classifier: Node.js, TypeScript, AMPQ Protocol
-- Actuator: Node.js, TypeScript, AMPQ Protocol
+- Stream Processor: Python, OpenCV, VidGear, ImageZMQ, ZeroMQ Protocol, AMQP Protocol
+- Broker: RabbitMQ, AMQP Protocol
+- Classifier: Node.js, TypeScript, AMQP Protocol
+- Actuator: Node.js, TypeScript, AMQP Protocol
 
 For orchestrating the components, Docker and Docker Compose are used.
 
