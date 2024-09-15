@@ -9,16 +9,41 @@ x-stream-adapter: &stream-adapter
   restart: unless-stopped
   expose:
     - 5000
+  profiles:
+    - all
+    - stream-adapters
 
 x-stream-processor-a: &stream-processor-a
   image: arionstream/stream-processor-a:latest
   build: ./services/stream-processors/base
   restart: unless-stopped
+  profiles:
+    - all
+    - stream-processors
 
 x-stream-processor-b: &stream-processor-b
   image: arionstream/stream-processor-b:latest
   build: ./services/stream-processors/base
   restart: unless-stopped
+  profiles:
+    - all
+    - stream-processors
+
+x-classifier-js-all: &classifier-js-all
+  image: arionstream/classifier-js-all:latest
+  build: ./services/classifiers/base-js
+  restart: unless-stopped
+  profiles:
+    - all
+    - classifiers
+
+x-actuator-js-all: &actuator-js-all
+  image: arionstream/actuators-js-all:latest
+  build: ./services/actuators/base-js
+  restart: unless-stopped
+  profiles:
+    - all
+    - actuators
 
 volumes:
   broker_data:
@@ -59,6 +84,24 @@ services:
       stream-adapter-1:
         condition: service_started
 
+  classifier-js-all-1:
+    <<: *classifier-js-all
+    environment:
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
+      - LOG_LEVEL=${LOG_LEVEL}
+    depends_on:
+      <<: *depends-on-broker
+
+  actuator-js-all-1:
+    <<: *actuator-js-all
+    environment:
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
+      - LOG_LEVEL=${LOG_LEVEL}
+    depends_on:
+      <<: *depends-on-broker
+
   broker:
     image: arionstream/broker:latest
     build: ./services/broker
@@ -71,6 +114,9 @@ services:
       - RABBITMQ_DEFAULT_PASS=${BROKER_RABBITMQ_DEFAULT_PASS}
     volumes:
       - broker_data:/var/lib/rabbitmq/
+    profiles:
+      - all
+      - broker
 
   storage:
     image: arionstream/storage:latest
@@ -85,3 +131,5 @@ services:
       - MINIO_REGION_NAME=us-east-1
     volumes:
       - storage_data:/data
+    profiles:
+      - storage
