@@ -6,7 +6,7 @@ x-depends-on-broker: &depends-on-broker
 x-stream-adapter: &stream-adapter
   image: arionstream/stream-adapter:latest
   build: ./services/stream-adapter
-  restart: unless-stopped
+  restart: none
   expose:
     - 5000
   profiles:
@@ -16,7 +16,7 @@ x-stream-adapter: &stream-adapter
 x-stream-processor-a: &stream-processor-a
   image: arionstream/stream-processor-a:latest
   build: ./services/stream-processors/base
-  restart: unless-stopped
+  restart: none
   profiles:
     - all
     - stream-processors
@@ -24,7 +24,15 @@ x-stream-processor-a: &stream-processor-a
 x-stream-processor-b: &stream-processor-b
   image: arionstream/stream-processor-b:latest
   build: ./services/stream-processors/base
-  restart: unless-stopped
+  restart: none
+  profiles:
+    - all
+    - stream-processors
+
+x-stream-processor-c: &stream-processor-c
+  image: arionstream/stream-processor-c:latest
+  build: ./services/stream-processors/base
+  restart: none
   profiles:
     - all
     - stream-processors
@@ -32,7 +40,7 @@ x-stream-processor-b: &stream-processor-b
 x-classifier-js-all: &classifier-js-all
   image: arionstream/classifier-js-all:latest
   build: ./services/classifiers/base-js
-  restart: unless-stopped
+  restart: none
   profiles:
     - all
     - classifiers
@@ -40,7 +48,7 @@ x-classifier-js-all: &classifier-js-all
 x-actuator-js-all: &actuator-js-all
   image: arionstream/actuators-js-all:latest
   build: ./services/actuators/base-js
-  restart: unless-stopped
+  restart: none
   profiles:
     - all
     - actuators
@@ -57,6 +65,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - ./videos:/videos # Used to access local video files
+      - ./benchmarks:/benchmarks
     devices:
       - /dev/video0:/dev/video0 # Used to access the webcam
 
@@ -67,6 +76,9 @@ services:
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
       - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
       - LOG_LEVEL=${LOG_LEVEL}
+      - PROCESSOR_LABEL=A
+    volumes:
+      - ./benchmarks:/benchmarks
     depends_on:
       <<: *depends-on-broker
       stream-adapter-1:
@@ -79,6 +91,24 @@ services:
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
       - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
       - LOG_LEVEL=${LOG_LEVEL}
+      - PROCESSOR_LABEL=B
+    volumes:
+      - ./benchmarks:/benchmarks
+    depends_on:
+      <<: *depends-on-broker
+      stream-adapter-1:
+        condition: service_started
+
+  stream-processor-c1:
+    <<: *stream-processor-c
+    environment:
+      - SENDER_URI=stream-adapter-1:5000
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - PROCESSOR_LABEL=C
+    volumes:
+      - ./benchmarks:/benchmarks
     depends_on:
       <<: *depends-on-broker
       stream-adapter-1:

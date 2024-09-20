@@ -1,7 +1,11 @@
+import time
+
 import imagezmq
 from vidgear.gears import VideoGear
 
 from src.helpers.logger import get_logger
+
+MAX_IMAGES = 1000
 
 
 class StreamSender:
@@ -17,8 +21,13 @@ class StreamSender:
         )
         self.logger.info('Sender ready to transmit images')
 
+        self._images_sent = 0
+
     def start(self):
         self.logger.info('Starting sending images...')
+        time.sleep(
+            2
+        )  # Wait for the stream processors to start, used only for benchmarking
 
         try:
             while True:
@@ -28,7 +37,16 @@ class StreamSender:
                     self.logger.debug('Image is None')
                     break
 
-                self._sender.send_image(self._sender_id, image)
+                timestamp_start = time.time()
+                self._sender.send_image(
+                    f'{self._sender_id}___{timestamp_start}___{self._images_sent + 1}',
+                    image,
+                )
+                self._images_sent += 1
+
+                # Sends only a limited number of images
+                if self._images_sent >= MAX_IMAGES:
+                    break
         except (KeyboardInterrupt, SystemExit):
             self.logger.error('Exit due to interrupt')
         except Exception as error:
