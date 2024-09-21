@@ -9,7 +9,7 @@ import numpy as np
 
 from src.helpers.logger import get_logger
 
-PROCESSORS_N = 3
+PROCESSORS_N = 1
 
 PROCESSOR_LABEL = os.getenv('PROCESSOR_LABEL')
 

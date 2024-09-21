@@ -40,7 +40,7 @@ x-stream-processor-c: &stream-processor-c
 x-classifier-js-all: &classifier-js-all
   image: arionstream/classifier-js-all:latest
   build: ./services/classifiers/base-js
-  restart: none
+  restart: on-failure
   profiles:
     - all
     - classifiers
@@ -48,7 +48,7 @@ x-classifier-js-all: &classifier-js-all
 x-actuator-js-all: &actuator-js-all
   image: arionstream/actuators-js-all:latest
   build: ./services/actuators/base-js
-  restart: none
+  restart: on-failure
   profiles:
     - all
     - actuators
@@ -129,6 +129,8 @@ services:
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
       - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
       - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./benchmarks:/benchmarks
     depends_on:
       <<: *depends-on-broker
 

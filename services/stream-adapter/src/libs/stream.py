@@ -26,7 +26,7 @@ class StreamSender:
     def start(self):
         self.logger.info('Starting sending images...')
         time.sleep(
-            2
+            15
         )  # Wait for the stream processors to start, used only for benchmarking
 
         try:

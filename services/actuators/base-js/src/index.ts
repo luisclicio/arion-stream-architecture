@@ -1,8 +1,17 @@
+import fs from 'node:fs/promises';
+
 import { env } from './env.js';
 import { logger } from './services/logger.js';
 import { brokerClient } from './services/broker.js';
 
 async function main() {
+  const PROCESSORS_N = 1;
+  const evaluationT2CsvFilePath = `/benchmarks/actuators/evaluation_t2_${PROCESSORS_N}p_${Date.now()}.csv`;
+  const evaluationT2CsvHeader = 'time_diff_ms,timestamp_start,timestamp_end\n';
+
+  await fs.mkdir('/benchmarks/actuators', { recursive: true });
+  await fs.writeFile(evaluationT2CsvFilePath, evaluationT2CsvHeader);
+
   const BROKER_EXCHANGE_NAME = env.BROKER_RABBITMQ_EXCHANGE_NAME;
 
   await brokerClient.setupChannel(async (channel) => {
@@ -27,6 +36,15 @@ async function main() {
     'arion-actuators-analyses-all',
     async ({ data }) => {
       try {
+        const timestampEnd = Date.now();
+        const timestampStart = Date.parse(data.timestamp);
+        const timeDiff = timestampEnd - timestampStart;
+
+        await fs.appendFile(
+          evaluationT2CsvFilePath,
+          `${timeDiff},${timestampStart},${timestampEnd}\n`,
+        );
+
         logger.info(data, 'Making action based on classified analysis');
         return { canAcknowledge: true };
       } catch (error) {
