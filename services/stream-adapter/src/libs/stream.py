@@ -20,22 +20,16 @@ class StreamSender:
     def start(self):
         self.logger.info('Starting sending images...')
 
-        try:
-            while True:
-                image = self._stream.read()
+        while True:
+            image = self._stream.read()
 
-                if image is None:
-                    self.logger.debug('Image is None')
-                    break
+            if image is None:
+                self.logger.debug('Image is None')
+                break
 
-                self._sender.send_image(self._sender_id, image)
-        except (KeyboardInterrupt, SystemExit):
-            self.logger.error('Exit due to interrupt')
-        except Exception as error:
-            self.logger.error('Error with no exception handler:', error)
-        finally:
-            self.stop()
+            self._sender.send_image(self._sender_id, image)
 
     def stop(self):
+        self.logger.info('Stopping stream sender...')
         self._stream.stop()
         self._sender.close()
