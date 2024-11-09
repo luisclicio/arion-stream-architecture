@@ -17,6 +17,8 @@ x-stream-processor-a: &stream-processor-a
   image: arionstream/stream-processor-a:latest
   build: ./services/stream-processors/base
   restart: unless-stopped
+  expose:
+    - 5000
   profiles:
     - all
     - stream-processors
@@ -25,6 +27,8 @@ x-stream-processor-b: &stream-processor-b
   image: arionstream/stream-processor-b:latest
   build: ./services/stream-processors/base
   restart: unless-stopped
+  expose:
+    - 5000
   profiles:
     - all
     - stream-processors

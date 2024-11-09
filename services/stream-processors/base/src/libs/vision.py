@@ -2,7 +2,6 @@ import random
 import time
 from abc import ABC, abstractmethod
 
-import cv2
 import numpy as np
 
 
@@ -45,8 +44,6 @@ class VisionModel(VisionModelBase):
             'people_detected': people_detected,
             'people_count': people_count,
         }
-        processed_image = cv2.cvtColor(
-            image, cv2.COLOR_BGR2GRAY
-        )  # Simulate image processing converting to grayscale
+        processed_image = image  # Simulate image transforming
 
         return prediction, processed_image

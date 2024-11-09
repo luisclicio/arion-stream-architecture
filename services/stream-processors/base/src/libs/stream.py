@@ -78,30 +78,56 @@ class StreamHandlerBase(ABC):
     """
 
     @abstractmethod
-    def handle(self, sender_id: str, image: np.ndarray):
+    def handle(self, sender_id: str, image: np.ndarray) -> np.ndarray | None:
         """
         Handle the image received from the sender.
         """
         pass
 
 
-class StreamReceiverController:
+class StreamSender:
+    logger = get_logger('StreamSender')
+
+    def __init__(self, port: int, sender_id: str):
+        self._port = port
+        self._sender_id = sender_id
+        self._sender = imagezmq.ImageSender(
+            connect_to=f'tcp://*:{self._port}', REQ_REP=False
+        )
+        self.logger.info('Sender ready to transmit images')
+
+    def send(self, image: np.ndarray | None):
+        if image is None:
+            self.logger.debug('Image is None')
+            return
+
+        self._sender.send_image(self._sender_id, image)
+
+    def stop(self):
+        self.logger.info('Stopping stream sender...')
+        self._sender.close()
+
+
+class StreamProcessorController:
     """
-    Controller for the stream receiver.
+    Controller for the stream processor.
     """
 
-    logger = get_logger('StreamReceiverController')
+    logger = get_logger('StreamProcessorController')
 
-    def __init__(self, receiver: StreamReceiver, handler: StreamHandlerBase):
+    def __init__(
+        self, receiver: StreamReceiver, handler: StreamHandlerBase, sender: StreamSender
+    ):
         self._receiver = receiver
         self._handler = handler
+        self._sender = sender
         self._stopped = False
 
     def start(self):
         """
-        Start the stream receiver controller.
+        Start the stream processor controller.
         """
-        self.logger.info('Starting stream receiver controller...')
+        self.logger.info('Starting stream processor controller...')
 
         try:
             while not self._stopped:
@@ -110,16 +136,18 @@ class StreamReceiverController:
                 if image is None:
                     break
 
-                self._handler.handle(sender_id, image)
+                handled_image = self._handler.handle(sender_id, image)
+                self._sender.send(handled_image)
         except TimeoutError as error:
             self.logger.error(error)
         finally:
+            self._sender.stop()
             self._receiver.stop()
-            self.logger.info('Stream receiver controller stopped')
+            self.logger.info('Stream processor controller stopped')
 
     def stop(self):
         """
-        Stop the stream receiver controller.
+        Stop the stream processor controller.
         """
-        self.logger.info('Stopping stream receiver controller...')
+        self.logger.info('Stopping stream processor controller...')
         self._stopped = True

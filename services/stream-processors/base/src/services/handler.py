@@ -96,3 +96,7 @@ class StreamHandler(StreamHandlerBase):
                     },
                 },
             )
+
+            return processed_image
+
+        return None
