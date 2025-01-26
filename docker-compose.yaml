@@ -88,6 +88,18 @@ services:
       stream-adapter-1:
         condition: service_started
 
+  stream-processor-b2:
+    <<: *stream-processor-b
+    environment:
+      - SENDER_URI=stream-processor-b1:5000
+      - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
+      - BROKER_RABBITMQ_EXCHANGE_NAME=${BROKER_RABBITMQ_EXCHANGE_NAME}
+      - LOG_LEVEL=${LOG_LEVEL}
+    depends_on:
+      <<: *depends-on-broker
+      stream-processor-b1:
+        condition: service_started
+
   classifier-js-all-1:
     <<: *classifier-js-all
     environment:
