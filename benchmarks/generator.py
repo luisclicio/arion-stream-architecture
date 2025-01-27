@@ -11,13 +11,12 @@ def arion_compose_generator(
     file_name: str,
     dir_path: str = ".",
     root_path: str = ".",
-    name: str = "arion-bechmark",
 ):
     compose = {
-        "name": name,
         "volumes": {},
         "services": {
             "broker": {
+                "image": "127.0.0.1:5000/arion-benchmark-broker",
                 "build": f"{root_path}/services/broker",
                 "environment": {
                     "RABBITMQ_DEFAULT_USER": "${BROKER_RABBITMQ_DEFAULT_USER}",
@@ -30,6 +29,7 @@ def arion_compose_generator(
     # Adiciona adaptadores
     for i, adapter in enumerate(adapters):
         compose["services"][f"stream-adapter-{i}"] = {
+            "image": "127.0.0.1:5000/arion-benchmark-adapter",
             "build": f"{root_path}/services/stream-adapter",
             "expose": ["5000"],
             "environment": {
@@ -47,6 +47,7 @@ def arion_compose_generator(
             sender_uri = f"{sender}:5000"
 
             compose["services"][service_name] = {
+                "image": "127.0.0.1:5000/arion-benchmark-processor",
                 "build": f"{root_path}/services/stream-processors/base",
                 "expose": ["5000"],
                 "environment": {
@@ -55,30 +56,35 @@ def arion_compose_generator(
                     "BROKER_RABBITMQ_EXCHANGE_NAME": "${BROKER_RABBITMQ_EXCHANGE_NAME}",
                     "LOG_LEVEL": "${LOG_LEVEL}",
                 },
-                "depends_on": {
-                    "broker": {"condition": "service_healthy"},
-                    sender: {"condition": "service_started"},
-                },
+                # "depends_on": {
+                #     "broker": {"condition": "service_healthy"},
+                #     sender: {"condition": "service_started"},
+                # },
+                "depends_on": ["broker", sender],
             }
 
     # Adiciona classificadores
     for i in range(n_classifiers):
         compose["services"][f"classifier-js-all-{i}"] = {
+            "image": "127.0.0.1:5000/arion-benchmark-classifier",
             "build": f"{root_path}/services/classifiers/base-js",
             "environment": {
                 "BROKER_RABBITMQ_CONNECTION_URI": "${BROKER_RABBITMQ_CONNECTION_URI}",
                 "BROKER_RABBITMQ_EXCHANGE_NAME": "${BROKER_RABBITMQ_EXCHANGE_NAME}",
                 "LOG_LEVEL": "${LOG_LEVEL}",
             },
+            "depends_on": ["broker"],
         }
 
     # Adiciona atuadores
     for i in range(n_actuators):
         compose["services"][f"actuator-{i}"] = {
-            "build": f"{root_path}/services/actuator",
+            "image": "127.0.0.1:5000/arion-benchmark-actuator",
+            "build": f"{root_path}/services/actuators/base-js",
             "environment": {
                 "LOG_LEVEL": "${LOG_LEVEL}",
             },
+            "depends_on": ["broker"],
         }
 
     os.makedirs(dir_path, exist_ok=True)
@@ -90,20 +96,19 @@ def arion_compose_generator(
 if __name__ == "__main__":
     adapters = [
         {"source_uri": "http://localhost:8080"},
-        {"source_uri": "http://localhost:8081"},
     ]
     processors = {
-        "face": [{"sender": "stream-adapter-0"}, {"sender": "stream-adapter-1"}],
-        "object": [{"sender": "stream-adapter-0"}, {"sender": "stream-adapter-1"}],
+        "type-a": [{"sender": "stream-adapter-0"}],
     }
-    n_classifiers = 2
-    n_actuators = 2
+    n_classifiers = 1
+    n_actuators = 1
 
     arion_compose_generator(
         adapters,
         processors,
         n_classifiers,
         n_actuators,
-        "docker-compose.bench.yaml",
+        "docker-compose.base.yaml",
+        dir_path="benchmarks",
         root_path="..",
     )

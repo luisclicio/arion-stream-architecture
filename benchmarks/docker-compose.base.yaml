@@ -1,0 +1,47 @@
+volumes: {}
+services:
+  broker:
+    image: 127.0.0.1:5000/arion-benchmark-broker
+    build: ../services/broker
+    environment:
+      RABBITMQ_DEFAULT_USER: ${BROKER_RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_RABBITMQ_DEFAULT_PASS}
+  stream-adapter-0:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    environment:
+      SOURCE_URI: http://localhost:8080
+      LOG_LEVEL: ${LOG_LEVEL}
+    volumes:
+    - ./videos:/videos
+  stream-processor-type-a-0:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    expose:
+    - '5000'
+    environment:
+      SENDER_URI: stream-adapter-0:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+    - broker
+    - stream-adapter-0
+  classifier-js-all-0:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    environment:
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+    - broker
+  actuator-0:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+    - broker
