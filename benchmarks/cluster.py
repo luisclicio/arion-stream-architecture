@@ -1,5 +1,7 @@
 # https://docs.docker.com/engine/swarm/stack-deploy/
+import os
 import pathlib
+import socket
 
 from python_on_whales import DockerClient, docker
 
@@ -10,16 +12,16 @@ except Exception:
     # print(error)
     pass
 
-# Get the join token for worker nodes
+# Get the join token for worker nodes and manager address
 worker_join_token = docker.swarm.join_token("worker")
+manager_address = socket.gethostname()
+cluster_nodes_ssh = os.environ.get("CLUSTER_NODES_SSH", "").split(",")
 
-# Connect to the worker nodes via SSH
-worker1_docker = DockerClient(host="ssh://user@system-vm1.local")
-worker2_docker = DockerClient(host="ssh://user@system-vm2.local")
-
-# # Join the worker nodes to the swarm
-worker1_docker.swarm.join("system.local:2377", token=worker_join_token)
-worker2_docker.swarm.join("system.local:2377", token=worker_join_token)
+for node_ssh in cluster_nodes_ssh:
+    # Connect to the worker node via SSH
+    node_docker = DockerClient(host=f"ssh://{node_ssh}")
+    # Join the worker node to the swarm
+    node_docker.swarm.join(f"{manager_address}:2377", token=worker_join_token)
 
 # Setup the registry
 compose_registry_file = pathlib.Path(__file__).parent / "docker-compose.registry.yaml"

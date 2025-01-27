@@ -22,6 +22,9 @@ def arion_compose_generator(
                     "RABBITMQ_DEFAULT_USER": "${BROKER_RABBITMQ_DEFAULT_USER}",
                     "RABBITMQ_DEFAULT_PASS": "${BROKER_RABBITMQ_DEFAULT_PASS}",
                 },
+                "deploy": {
+                    "mode": "global",
+                },
             }
         },
     }
