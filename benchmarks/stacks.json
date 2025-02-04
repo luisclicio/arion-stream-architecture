@@ -1,0 +1,10 @@
+[
+  {
+    "adapters": [{ "source_uri": "http://localhost:8080" }],
+    "processors": {
+      "type-a": [{ "sender": "stream-adapter-0" }]
+    },
+    "n_classifiers": 1,
+    "n_actuators": 1
+  }
+]

@@ -1,4 +1,5 @@
-volumes: {}
+volumes:
+  mongodb_data: {}
 services:
   broker:
     image: 127.0.0.1:5000/arion-benchmark-broker
@@ -6,14 +7,32 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${BROKER_RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${BROKER_RABBITMQ_DEFAULT_PASS}
+    deploy:
+      mode: global
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+    - 27017:27017
+    volumes:
+    - mongodb_data:/data/db
+    deploy:
+      mode: global
   stream-adapter-0:
     image: 127.0.0.1:5000/arion-benchmark-adapter
     build: ../services/stream-adapter
     expose:
     - '5000'
     environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-0
       SOURCE_URI: http://localhost:8080
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 1ad_1p_1c_1at
     volumes:
     - ./videos:/videos
   stream-processor-type-a-0:
@@ -22,10 +41,15 @@ services:
     expose:
     - '5000'
     environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-0
       SENDER_URI: stream-adapter-0:5000
       BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
       BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 1ad_1p_1c_1at
     depends_on:
     - broker
     - stream-adapter-0
@@ -33,15 +57,25 @@ services:
     image: 127.0.0.1:5000/arion-benchmark-classifier
     build: ../services/classifiers/base-js
     environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-0
       BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
       BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 1ad_1p_1c_1at
     depends_on:
     - broker
   actuator-0:
     image: 127.0.0.1:5000/arion-benchmark-actuator
     build: ../services/actuators/base-js
     environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-0
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 1ad_1p_1c_1at
     depends_on:
     - broker

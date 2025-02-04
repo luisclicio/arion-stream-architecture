@@ -1,4 +1,6 @@
+import json
 import os
+import pathlib
 
 import yaml
 
@@ -11,9 +13,12 @@ def arion_compose_generator(
     file_name: str,
     dir_path: str = ".",
     root_path: str = ".",
+    generator_env: dict = {},
 ):
     compose = {
-        "volumes": {},
+        "volumes": {
+            "mongodb_data": {},
+        },
         "services": {
             "broker": {
                 "image": "127.0.0.1:5000/arion-benchmark-broker",
@@ -25,19 +30,37 @@ def arion_compose_generator(
                 "deploy": {
                     "mode": "global",
                 },
-            }
+            },
+            "mongodb": {
+                "image": "mongo:8",
+                "environment": {
+                    "MONGO_INITDB_ROOT_USERNAME": "${MONGO_USERNAME}",
+                    "MONGO_INITDB_ROOT_PASSWORD": "${MONGO_PASSWORD}",
+                },
+                "ports": ["27017:27017"],
+                "volumes": ["mongodb_data:/data/db"],
+                "deploy": {
+                    "mode": "global",
+                },
+            },
         },
     }
 
     # Adiciona adaptadores
     for i, adapter in enumerate(adapters):
-        compose["services"][f"stream-adapter-{i}"] = {
+        service_name = f"stream-adapter-{i}"
+        compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-adapter",
             "build": f"{root_path}/services/stream-adapter",
             "expose": ["5000"],
             "environment": {
+                "SERVICE_TYPE": "stream-adapter",
+                "SERVICE_NAME": service_name,
                 "SOURCE_URI": adapter["source_uri"],
+                "MONGO_USERNAME": "${MONGO_USERNAME}",
+                "MONGO_PASSWORD": "${MONGO_PASSWORD}",
                 "LOG_LEVEL": "${LOG_LEVEL}",
+                **generator_env,
             },
             "volumes": ["./videos:/videos"],
         }
@@ -54,10 +77,15 @@ def arion_compose_generator(
                 "build": f"{root_path}/services/stream-processors/base",
                 "expose": ["5000"],
                 "environment": {
+                    "SERVICE_TYPE": "stream-processor",
+                    "SERVICE_NAME": service_name,
                     "SENDER_URI": sender_uri,
                     "BROKER_RABBITMQ_CONNECTION_URI": "${BROKER_RABBITMQ_CONNECTION_URI}",
                     "BROKER_RABBITMQ_EXCHANGE_NAME": "${BROKER_RABBITMQ_EXCHANGE_NAME}",
+                    "MONGO_USERNAME": "${MONGO_USERNAME}",
+                    "MONGO_PASSWORD": "${MONGO_PASSWORD}",
                     "LOG_LEVEL": "${LOG_LEVEL}",
+                    **generator_env,
                 },
                 # "depends_on": {
                 #     "broker": {"condition": "service_healthy"},
@@ -68,24 +96,36 @@ def arion_compose_generator(
 
     # Adiciona classificadores
     for i in range(n_classifiers):
-        compose["services"][f"classifier-js-all-{i}"] = {
+        service_name = f"classifier-js-all-{i}"
+        compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-classifier",
             "build": f"{root_path}/services/classifiers/base-js",
             "environment": {
+                "SERVICE_TYPE": "classifier",
+                "SERVICE_NAME": service_name,
                 "BROKER_RABBITMQ_CONNECTION_URI": "${BROKER_RABBITMQ_CONNECTION_URI}",
                 "BROKER_RABBITMQ_EXCHANGE_NAME": "${BROKER_RABBITMQ_EXCHANGE_NAME}",
+                "MONGO_USERNAME": "${MONGO_USERNAME}",
+                "MONGO_PASSWORD": "${MONGO_PASSWORD}",
                 "LOG_LEVEL": "${LOG_LEVEL}",
+                **generator_env,
             },
             "depends_on": ["broker"],
         }
 
     # Adiciona atuadores
     for i in range(n_actuators):
-        compose["services"][f"actuator-{i}"] = {
+        service_name = f"actuator-{i}"
+        compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-actuator",
             "build": f"{root_path}/services/actuators/base-js",
             "environment": {
+                "SERVICE_TYPE": "actuator",
+                "SERVICE_NAME": service_name,
+                "MONGO_USERNAME": "${MONGO_USERNAME}",
+                "MONGO_PASSWORD": "${MONGO_PASSWORD}",
                 "LOG_LEVEL": "${LOG_LEVEL}",
+                **generator_env,
             },
             "depends_on": ["broker"],
         }
@@ -97,21 +137,54 @@ def arion_compose_generator(
 
 
 if __name__ == "__main__":
-    adapters = [
-        {"source_uri": "http://localhost:8080"},
-    ]
-    processors = {
-        "type-a": [{"sender": "stream-adapter-0"}],
+    # Creates base services stack
+    base_stack = {
+        "adapters": [
+            {"source_uri": "http://localhost:8080"},
+        ],
+        "processors": {
+            "type-a": [{"sender": "stream-adapter-0"}],
+        },
+        "n_classifiers": 1,
+        "n_actuators": 1,
     }
-    n_classifiers = 1
-    n_actuators = 1
 
     arion_compose_generator(
-        adapters,
-        processors,
-        n_classifiers,
-        n_actuators,
+        base_stack["adapters"],
+        base_stack["processors"],
+        base_stack["n_classifiers"],
+        base_stack["n_actuators"],
         "docker-compose.base.yaml",
         dir_path="benchmarks",
         root_path="..",
+        generator_env={
+            "STACK_ID": "1ad_1p_1c_1at",
+        },
     )
+
+    # Creates benchmark stacks
+    with open(pathlib.Path(__file__).parent / "stacks.json", "r") as file:
+        stacks = json.load(file)
+
+    for stack in stacks:
+        n_adapters = len(stack["adapters"])
+        n_processors = sum(
+            [len(processors) for processors in stack["processors"].values()]
+        )
+        n_classifiers = stack["n_classifiers"]
+        n_actuators = stack["n_actuators"]
+
+        stack_id = f"{n_adapters}ad_{n_processors}p_{n_classifiers}c_{n_actuators}at"
+
+        arion_compose_generator(
+            stack["adapters"],
+            stack["processors"],
+            stack["n_classifiers"],
+            stack["n_actuators"],
+            f"docker-compose.bench.{stack_id}.yaml",
+            dir_path="benchmarks",
+            root_path="..",
+            generator_env={
+                "STACK_ID": stack_id,
+            },
+        )
