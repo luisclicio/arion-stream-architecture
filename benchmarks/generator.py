@@ -45,6 +45,7 @@ def arion_compose_generator(
             },
         },
     }
+    BROKER_RABBITMQ_HOST = "broker:5672"
 
     # Adiciona adaptadores
     for i, adapter in enumerate(adapters):
@@ -53,6 +54,7 @@ def arion_compose_generator(
             "image": "127.0.0.1:5000/arion-benchmark-adapter",
             "build": f"{root_path}/services/stream-adapter",
             "expose": ["5000"],
+            "command": f"wait-for-it {BROKER_RABBITMQ_HOST} -- poetry run python -m src.main",
             "environment": {
                 "SERVICE_TYPE": "stream-adapter",
                 "SERVICE_NAME": service_name,
@@ -75,6 +77,7 @@ def arion_compose_generator(
             compose["services"][service_name] = {
                 "image": "127.0.0.1:5000/arion-benchmark-processor",
                 "build": f"{root_path}/services/stream-processors/base",
+                "command": f"wait-for-it {sender_uri} -- poetry run python -m src.main",
                 "expose": ["5000"],
                 "environment": {
                     "SERVICE_TYPE": "stream-processor",

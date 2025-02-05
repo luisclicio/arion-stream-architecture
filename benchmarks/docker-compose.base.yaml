@@ -25,6 +25,7 @@ services:
     build: ../services/stream-adapter
     expose:
     - '5000'
+    command: wait-for-it broker:5672 -- poetry run python -m src.main
     environment:
       SERVICE_TYPE: stream-adapter
       SERVICE_NAME: stream-adapter-0
@@ -38,6 +39,7 @@ services:
   stream-processor-type-a-0:
     image: 127.0.0.1:5000/arion-benchmark-processor
     build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-0:5000 -- poetry run python -m src.main
     expose:
     - '5000'
     environment:
