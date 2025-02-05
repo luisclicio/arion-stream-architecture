@@ -6,6 +6,7 @@ x-depends-on-broker: &depends-on-broker
 x-stream-adapter: &stream-adapter
   image: arionstream/stream-adapter:latest
   build: ./services/stream-adapter
+  command: wait-for-it broker:5672 -- python -m src.main
   restart: unless-stopped
   expose:
     - 5000
@@ -66,6 +67,7 @@ services:
 
   stream-processor-a1:
     <<: *stream-processor-a
+    command: wait-for-it stream-adapter-1:5000 -- python -m src.main
     environment:
       - SENDER_URI=stream-adapter-1:5000
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
@@ -78,6 +80,7 @@ services:
 
   stream-processor-b1:
     <<: *stream-processor-b
+    command: wait-for-it stream-adapter-1:5000 -- python -m src.main
     environment:
       - SENDER_URI=stream-adapter-1:5000
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
@@ -90,6 +93,7 @@ services:
 
   stream-processor-b2:
     <<: *stream-processor-b
+    command: wait-for-it stream-processor-b1:5000 -- python -m src.main
     environment:
       - SENDER_URI=stream-processor-b1:5000
       - BROKER_RABBITMQ_CONNECTION_URI=${BROKER_RABBITMQ_CONNECTION_URI}
