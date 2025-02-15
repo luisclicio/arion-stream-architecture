@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+from time import sleep
 
 import imagezmq
 from src.helpers.logger import get_logger
@@ -42,14 +43,23 @@ class StreamSender:
         self.logger.info("Sender ready to transmit images")
 
     def start(self):
+        self.logger.info("Delaying start for 15 seconds...")
+        sleep(15)
+
         self.logger.info("Starting sending images...")
 
         while True:
             image = self._stream.get_frame()
 
+            if self._image_id > 1000:
+                # Sleep after 1000 images to grant time for the benchmark to finish
+                self.logger.debug("Sleeping after 1000 images...")
+                sleep(60 * 10)  # 10 minutes
+
             if image is None:
-                self.logger.debug("Image is None")
-                break
+                # self.logger.debug("Image is None")
+                # break
+                continue
 
             self._image_id += 1
             sending_image_timestamp = datetime.now()
@@ -71,6 +81,9 @@ class StreamSender:
                 image,
             )
 
+            benchmark_data["adapter"]["sending_image_timestamp"] = (
+                sending_image_timestamp
+            )
             data_to_save = {
                 "metadata": {
                     "timestamp": datetime.now(),
@@ -80,6 +93,9 @@ class StreamSender:
                 **benchmark_data,
             }
             benchmark_data_saver.save(data_to_save)
+
+            # Send 10 images per second
+            sleep(1 / 10)
 
     def stop(self):
         self.logger.info("Stopping stream sender...")

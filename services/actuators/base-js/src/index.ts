@@ -37,7 +37,30 @@ async function main() {
         logger.info(data, 'Making action based on classified analysis');
 
         const benchmarkData = {
-          ...data.benchmark,
+          adapter: {
+            ...data.benchmark.adapter,
+            sending_image_timestamp: new Date(
+              data.benchmark.adapter.sending_image_timestamp,
+            ),
+          },
+          processor: {
+            ...data.benchmark.processor,
+            received_image_timestamp: new Date(
+              data.benchmark.processor.received_image_timestamp,
+            ),
+            sending_data_timestamp: new Date(
+              data.benchmark.processor.sending_data_timestamp,
+            ),
+          },
+          classifier: {
+            ...data.benchmark.classifier,
+            received_data_timestamp: new Date(
+              data.benchmark.classifier.received_data_timestamp,
+            ),
+            sending_data_timestamp: new Date(
+              data.benchmark.classifier.sending_data_timestamp,
+            ),
+          },
           actuator: {
             service_name: env.SERVICE_NAME,
             received_data_timestamp: receivedDataTimestamp,

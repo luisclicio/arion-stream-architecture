@@ -1,6 +1,6 @@
 [
   {
-    "adapters": [{ "source_uri": "http://localhost:8080" }],
+    "adapters": [{ "source_uri": "./videos/blank_video.mp4" }],
     "processors": {
       "type-a": [{ "sender": "stream-adapter-0" }]
     },

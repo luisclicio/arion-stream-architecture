@@ -135,12 +135,14 @@ class StreamProcessorController:
 
         try:
             while not self._stopped:
-                data, image = self._receiver.receive()
+                data, image = self._receiver.receive(
+                    timeout=60 * 10
+                )  # Timeout for benchmark
                 received_image_timestamp = datetime.now()
                 received_image_latency = (
                     received_image_timestamp
                     - datetime.fromisoformat(
-                        data.benchmark.adapter.sending_image_timestamp
+                        data["benchmark"]["adapter"]["sending_image_timestamp"]
                     )
                 ).total_seconds() * 1000  # ms
 
@@ -149,7 +151,7 @@ class StreamProcessorController:
 
                 sending_data_timestamp = datetime.now()
                 benchmark_data = {
-                    **data.benchmark,
+                    **data["benchmark"],
                     "processor": {
                         "service_name": os.getenv("SERVICE_NAME"),
                         "received_image_timestamp": received_image_timestamp.isoformat(),
@@ -163,6 +165,11 @@ class StreamProcessorController:
                 )
                 self._sender.send(handled_image)
 
+                benchmark_data["adapter"]["sending_image_timestamp"] = (
+                    datetime.fromisoformat(
+                        data["benchmark"]["adapter"]["sending_image_timestamp"]
+                    )
+                )
                 benchmark_data["processor"]["received_image_timestamp"] = (
                     received_image_timestamp
                 )

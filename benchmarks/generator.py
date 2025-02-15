@@ -55,6 +55,7 @@ def arion_compose_generator(
             "build": f"{root_path}/services/stream-adapter",
             "expose": ["5000"],
             "command": f"wait-for-it {BROKER_RABBITMQ_HOST} -- python -m src.main",
+            "restart": "no",
             "environment": {
                 "SERVICE_TYPE": "stream-adapter",
                 "SERVICE_NAME": service_name,
@@ -63,7 +64,6 @@ def arion_compose_generator(
                 "LOG_LEVEL": "${LOG_LEVEL}",
                 **generator_env,
             },
-            "volumes": ["./videos:/videos"],
         }
 
     # Adiciona processadores
@@ -78,6 +78,7 @@ def arion_compose_generator(
                 "build": f"{root_path}/services/stream-processors/base",
                 "command": f"wait-for-it {sender_uri} -- python -m src.main",
                 "expose": ["5000"],
+                "restart": "no",
                 "environment": {
                     "SERVICE_TYPE": "stream-processor",
                     "SERVICE_NAME": service_name,
@@ -101,6 +102,7 @@ def arion_compose_generator(
         compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-classifier",
             "build": f"{root_path}/services/classifiers/base-js",
+            "restart": "no",
             "environment": {
                 "SERVICE_TYPE": "classifier",
                 "SERVICE_NAME": service_name,
@@ -119,9 +121,12 @@ def arion_compose_generator(
         compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-actuator",
             "build": f"{root_path}/services/actuators/base-js",
+            "restart": "no",
             "environment": {
                 "SERVICE_TYPE": "actuator",
                 "SERVICE_NAME": service_name,
+                "BROKER_RABBITMQ_CONNECTION_URI": "${BROKER_RABBITMQ_CONNECTION_URI}",
+                "BROKER_RABBITMQ_EXCHANGE_NAME": "${BROKER_RABBITMQ_EXCHANGE_NAME}",
                 "MONGO_URI": "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/",
                 "LOG_LEVEL": "${LOG_LEVEL}",
                 **generator_env,
@@ -157,7 +162,7 @@ if __name__ == "__main__":
         dir_path="benchmarks",
         root_path="..",
         generator_env={
-            "STACK_ID": "1ad_1p_1c_1at",
+            "STACK_ID": "base_1ad_1p_1c_1at",
         },
     )
 

@@ -15,7 +15,9 @@ except Exception:
 # Get the join token for worker nodes and manager address
 worker_join_token = docker.swarm.join_token("worker")
 manager_address = socket.gethostname()
-cluster_nodes_ssh = os.environ.get("CLUSTER_NODES_SSH", "").split(",")
+cluster_nodes_ssh = filter(
+    lambda node: node != "", os.environ.get("CLUSTER_NODES_SSH", "").split(",")
+)
 
 for node_ssh in cluster_nodes_ssh:
     # Connect to the worker node via SSH

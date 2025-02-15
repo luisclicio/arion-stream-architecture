@@ -45,7 +45,21 @@ async function main() {
 
         const sendingDataTimestamp = new Date();
         const benchmarkData = {
-          ...data.benchmark,
+          adapter: {
+            ...data.benchmark.adapter,
+            sending_image_timestamp: new Date(
+              data.benchmark.adapter.sending_image_timestamp,
+            ),
+          },
+          processor: {
+            ...data.benchmark.processor,
+            received_image_timestamp: new Date(
+              data.benchmark.processor.received_image_timestamp,
+            ),
+            sending_data_timestamp: new Date(
+              data.benchmark.processor.sending_data_timestamp,
+            ),
+          },
           classifier: {
             service_name: env.SERVICE_NAME,
             received_data_timestamp: receivedDataTimestamp,

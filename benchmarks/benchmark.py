@@ -8,6 +8,7 @@ if __name__ == "__main__":
     compose_benchmark_files = glob.glob(
         str(pathlib.Path(__file__).parent / "docker-compose.bench.*")
     )
+    env_file = pathlib.Path(__file__).parent / ".env"
 
     print("Benchmark files found:", compose_benchmark_files)
 
@@ -18,7 +19,9 @@ if __name__ == "__main__":
         )
 
         print("Deploying stack:", compose_benchmark_file)
-        docker.stack.deploy("arion-benchmark", compose_benchmark_filepath)
+        docker.stack.deploy(
+            "arion-benchmark", compose_benchmark_filepath, env_files=[env_file]
+        )
 
         print("Waiting for stack to complete...")
         # Wait for the stack to complete (you may need to implement a proper wait mechanism)
