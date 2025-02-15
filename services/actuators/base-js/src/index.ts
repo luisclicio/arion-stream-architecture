@@ -1,6 +1,8 @@
+import type { ProcessorBaseData } from './types/index.js';
 import { env } from './env.js';
 import { logger } from './services/logger.js';
 import { brokerClient } from './services/broker.js';
+import { benchmarkDataSaver } from './services/benchmark.js';
 
 async function main() {
   const BROKER_EXCHANGE_NAME = env.BROKER_RABBITMQ_EXCHANGE_NAME;
@@ -23,11 +25,35 @@ async function main() {
     await channel.prefetch(1); // Process one message at a time
   });
 
-  brokerClient.consumeFromQueue(
+  brokerClient.consumeFromQueue<ProcessorBaseData>(
     'arion-actuators-analyses-all',
     async ({ data }) => {
+      const receivedDataTimestamp = new Date();
+      const receivedDataLatency =
+        receivedDataTimestamp.getTime() -
+        new Date(data.benchmark.classifier.sending_data_timestamp).getTime(); // ms
+
       try {
         logger.info(data, 'Making action based on classified analysis');
+
+        const benchmarkData = {
+          ...data.benchmark,
+          actuator: {
+            service_name: env.SERVICE_NAME,
+            received_data_timestamp: receivedDataTimestamp,
+            received_data_latency: receivedDataLatency,
+          },
+        };
+        const dataToSave = {
+          metadata: {
+            timestamp: new Date(),
+            service_type: env.SERVICE_TYPE,
+            stack_id: env.STACK_ID,
+          },
+          ...benchmarkData,
+        };
+        await benchmarkDataSaver.save(dataToSave);
+
         return { canAcknowledge: true };
       } catch (error) {
         logger.error(

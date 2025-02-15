@@ -3,6 +3,7 @@ import { env } from './env.js';
 import { logger } from './services/logger.js';
 import { brokerClient } from './services/broker.js';
 import { getSeverityLevel } from './libs/classifier.js';
+import { benchmarkDataSaver } from './services/benchmark.js';
 
 async function main() {
   const BROKER_EXCHANGE_NAME = env.BROKER_RABBITMQ_EXCHANGE_NAME;
@@ -28,6 +29,12 @@ async function main() {
   brokerClient.consumeFromQueue<ProcessorBaseData>(
     'arion-classifiers-analyses-all',
     async ({ data }) => {
+      // NOTE: BENCHMARK POINT
+      const receivedDataTimestamp = new Date();
+      const receivedDataLatency =
+        receivedDataTimestamp.getTime() -
+        new Date(data.benchmark.processor.sending_data_timestamp).getTime(); // ms
+
       try {
         logger.info(data, 'Making classification based on analysis');
 
@@ -36,14 +43,36 @@ async function main() {
 
         logger.debug({ severity }, 'Classification made based on analysis');
 
+        const sendingDataTimestamp = new Date();
+        const benchmarkData = {
+          ...data.benchmark,
+          classifier: {
+            service_name: env.SERVICE_NAME,
+            received_data_timestamp: receivedDataTimestamp,
+            received_data_latency: receivedDataLatency,
+            sending_data_timestamp: sendingDataTimestamp,
+          },
+        };
+
         await brokerClient.publishToExchange(
           BROKER_EXCHANGE_NAME,
           `arion.classifiers.analyses.${data.model.name}.${severity}`,
           {
             ...data,
             severity,
+            benchmark: benchmarkData,
           },
         );
+
+        const dataToSave = {
+          metadata: {
+            timestamp: new Date(),
+            service_type: env.SERVICE_TYPE,
+            stack_id: env.STACK_ID,
+          },
+          ...benchmarkData,
+        };
+        await benchmarkDataSaver.save(dataToSave);
 
         return { canAcknowledge: true };
       } catch (error) {

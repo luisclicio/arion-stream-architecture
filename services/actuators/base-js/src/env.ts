@@ -14,6 +14,10 @@ export const envSchema = z.object({
 
   BROKER_RABBITMQ_CONNECTION_URI: z.string().url(),
   BROKER_RABBITMQ_EXCHANGE_NAME: z.string().default('arion'),
+  MONGO_URI: z.string().url(),
+  SERVICE_TYPE: z.string().default('actuator'),
+  SERVICE_NAME: z.string(),
+  STACK_ID: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

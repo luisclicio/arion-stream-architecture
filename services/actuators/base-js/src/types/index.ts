@@ -5,6 +5,7 @@ export type ProcessorBaseData = {
     name: string;
   };
   data: Record<string, unknown>;
+  severity: number;
   benchmark: {
     adapter: {
       service_name: string;
@@ -15,6 +16,12 @@ export type ProcessorBaseData = {
       service_name: string;
       received_image_timestamp: string;
       received_image_latency: number;
+      sending_data_timestamp: string;
+    };
+    classifier: {
+      service_name: string;
+      received_data_timestamp: string;
+      received_data_latency: number;
       sending_data_timestamp: string;
     };
   };
