@@ -1,5 +1,6 @@
 import json
 import os
+import queue
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -19,13 +20,17 @@ class StreamReceiver:
 
     logger = get_logger("StreamReceiver")
 
-    def __init__(self, sender_uri: str):
+    def __init__(self, sender_uri: str, prioritize_data: bool = False):
         self._sender_uri = sender_uri
         self._stopped = False
         self._data = (None, None)
         self._data_ready = threading.Event()
         self._thread = threading.Thread(target=self._run, args=())
         self._thread.daemon = True
+        self._prioritize_data = prioritize_data
+
+        if self._prioritize_data:
+            self._queue = queue.Queue()
 
     def start(self):
         """
@@ -39,15 +44,24 @@ class StreamReceiver:
         """
         Returns the most recent data (sender ID and image) received from the sender.
         """
-        flag = self._data_ready.wait(timeout=timeout)
+        if self._prioritize_data:
+            try:
+                data = self._queue.get(timeout=timeout)
+                return data
+            except queue.Empty:
+                raise TimeoutError(
+                    f"Timeout while reading from sender tcp://{self._sender_uri}"
+                )
+        else:
+            flag = self._data_ready.wait(timeout=timeout)
 
-        if not flag:
-            raise TimeoutError(
-                f"Timeout while reading from sender tcp://{self._sender_uri}"
-            )
+            if not flag:
+                raise TimeoutError(
+                    f"Timeout while reading from sender tcp://{self._sender_uri}"
+                )
 
-        self._data_ready.clear()
-        return self._data
+            self._data_ready.clear()
+            return self._data
 
     def _run(self):
         """
@@ -63,8 +77,12 @@ class StreamReceiver:
                 break
 
             data = json.loads(raw_data)
-            self._data = (data, image)
-            self._data_ready.set()
+
+            if self._prioritize_data:
+                self._queue.put((data, image))
+            else:
+                self._data = (data, image)
+                self._data_ready.set()
 
         receiver.close()
 
