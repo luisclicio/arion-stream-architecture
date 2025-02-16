@@ -1,6 +1,5 @@
 import os
 import socket
-from time import sleep
 
 from src.helpers.exceptions import SigIntException, SigTermException
 from src.helpers.logger import get_logger
@@ -24,10 +23,6 @@ if __name__ == "__main__":
     except Exception as error:
         logger.error("Error with no exception handler:", error)
     finally:
-        # Sleep to grant time for the benchmark to finish
-        logger.debug("Sleeping after stop...")
-        sleep(60 * 10)  # 10 minutes
-
         stream_sender.stop()
         stream.stop()
         logger.info("Stream adapter stopped")

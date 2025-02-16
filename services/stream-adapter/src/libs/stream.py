@@ -51,7 +51,7 @@ class StreamSender:
         while True:
             image = self._stream.get_frame()
 
-            if self._image_id > 1000:
+            if self._image_id >= 1000:
                 # Sleep after 1000 images to grant time for the benchmark to finish
                 self.logger.debug("Sleeping after 1000 images...")
                 sleep(60 * 10)  # 10 minutes
@@ -94,8 +94,8 @@ class StreamSender:
             }
             benchmark_data_saver.save(data_to_save)
 
-            # Send 10 images per second
-            sleep(1 / 10)
+            # Send 15 images per second
+            sleep(1 / 15)
 
     def stop(self):
         self.logger.info("Stopping stream sender...")
