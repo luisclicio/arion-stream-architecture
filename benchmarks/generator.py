@@ -55,7 +55,6 @@ def arion_compose_generator(
             "build": f"{root_path}/services/stream-adapter",
             "expose": ["5000"],
             "command": f"wait-for-it {BROKER_RABBITMQ_HOST} -- python -m src.main",
-            "restart": "no",
             "environment": {
                 "SERVICE_TYPE": "stream-adapter",
                 "SERVICE_NAME": service_name,
@@ -63,6 +62,11 @@ def arion_compose_generator(
                 "MONGO_URI": "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/",
                 "LOG_LEVEL": "${LOG_LEVEL}",
                 **generator_env,
+            },
+            "deploy": {
+                "restart_policy": {
+                    "condition": "none",
+                },
             },
         }
 
@@ -78,7 +82,6 @@ def arion_compose_generator(
                 "build": f"{root_path}/services/stream-processors/base",
                 "command": f"wait-for-it {sender_uri} -- python -m src.main",
                 "expose": ["5000"],
-                "restart": "no",
                 "environment": {
                     "SERVICE_TYPE": "stream-processor",
                     "SERVICE_NAME": service_name,
@@ -94,6 +97,11 @@ def arion_compose_generator(
                 #     sender: {"condition": "service_started"},
                 # },
                 "depends_on": ["broker", sender],
+                "deploy": {
+                    "restart_policy": {
+                        "condition": "none",
+                    },
+                },
             }
 
     # Adiciona classificadores
@@ -102,7 +110,7 @@ def arion_compose_generator(
         compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-classifier",
             "build": f"{root_path}/services/classifiers/base-js",
-            "restart": "no",
+            "command": f"wait-for-it {BROKER_RABBITMQ_HOST} -- node index.js",
             "environment": {
                 "SERVICE_TYPE": "classifier",
                 "SERVICE_NAME": service_name,
@@ -113,6 +121,11 @@ def arion_compose_generator(
                 **generator_env,
             },
             "depends_on": ["broker"],
+            "deploy": {
+                "restart_policy": {
+                    "condition": "none",
+                },
+            },
         }
 
     # Adiciona atuadores
@@ -121,7 +134,7 @@ def arion_compose_generator(
         compose["services"][service_name] = {
             "image": "127.0.0.1:5000/arion-benchmark-actuator",
             "build": f"{root_path}/services/actuators/base-js",
-            "restart": "no",
+            "command": f"wait-for-it {BROKER_RABBITMQ_HOST} -- node index.js",
             "environment": {
                 "SERVICE_TYPE": "actuator",
                 "SERVICE_NAME": service_name,
@@ -132,6 +145,11 @@ def arion_compose_generator(
                 **generator_env,
             },
             "depends_on": ["broker"],
+            "deploy": {
+                "restart_policy": {
+                    "condition": "none",
+                },
+            },
         }
 
     os.makedirs(dir_path, exist_ok=True)

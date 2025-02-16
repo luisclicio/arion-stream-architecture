@@ -1,9 +1,9 @@
-ARG NODE_IMAGE=node:20-alpine
-
-FROM $NODE_IMAGE AS base
+FROM node:20-slim AS base
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y wait-for-it
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.4
 COPY package.json pnpm-lock.yaml /app/
 WORKDIR /app
 

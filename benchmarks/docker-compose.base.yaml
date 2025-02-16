@@ -26,7 +26,6 @@ services:
     expose:
     - '5000'
     command: wait-for-it broker:5672 -- python -m src.main
-    restart: 'no'
     environment:
       SERVICE_TYPE: stream-adapter
       SERVICE_NAME: stream-adapter-0
@@ -34,13 +33,15 @@ services:
       MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
       LOG_LEVEL: ${LOG_LEVEL}
       STACK_ID: base_1ad_1p_1c_1at
+    deploy:
+      restart_policy:
+        condition: none
   stream-processor-type-a-0:
     image: 127.0.0.1:5000/arion-benchmark-processor
     build: ../services/stream-processors/base
     command: wait-for-it stream-adapter-0:5000 -- python -m src.main
     expose:
     - '5000'
-    restart: 'no'
     environment:
       SERVICE_TYPE: stream-processor
       SERVICE_NAME: stream-processor-type-a-0
@@ -53,10 +54,13 @@ services:
     depends_on:
     - broker
     - stream-adapter-0
+    deploy:
+      restart_policy:
+        condition: none
   classifier-js-all-0:
     image: 127.0.0.1:5000/arion-benchmark-classifier
     build: ../services/classifiers/base-js
-    restart: 'no'
+    command: wait-for-it broker:5672 -- node index.js
     environment:
       SERVICE_TYPE: classifier
       SERVICE_NAME: classifier-js-all-0
@@ -67,10 +71,13 @@ services:
       STACK_ID: base_1ad_1p_1c_1at
     depends_on:
     - broker
+    deploy:
+      restart_policy:
+        condition: none
   actuator-0:
     image: 127.0.0.1:5000/arion-benchmark-actuator
     build: ../services/actuators/base-js
-    restart: 'no'
+    command: wait-for-it broker:5672 -- node index.js
     environment:
       SERVICE_TYPE: actuator
       SERVICE_NAME: actuator-0
@@ -81,3 +88,6 @@ services:
       STACK_ID: base_1ad_1p_1c_1at
     depends_on:
     - broker
+    deploy:
+      restart_policy:
+        condition: none
