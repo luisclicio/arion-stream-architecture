@@ -94,8 +94,8 @@ class StreamSender:
             }
             benchmark_data_saver.save(data_to_save)
 
-            # Send 15 images per second
-            sleep(1 / 15)
+            # Send 10 images per second
+            sleep(1 / 10)
 
     def stop(self):
         self.logger.info("Stopping stream sender...")

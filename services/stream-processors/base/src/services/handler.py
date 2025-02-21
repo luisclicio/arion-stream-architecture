@@ -72,7 +72,7 @@ class StreamHandler(StreamHandlerBase):
         prediction, processed_image = vision_model.predict(image)
 
         if prediction["people_detected"]:
-            self.logger.info(
+            self.logger.debug(
                 f"PEOPLE DETECTED: Count: {prediction['people_count']} - Precision: {prediction['precision']:.2%}"
             )
 

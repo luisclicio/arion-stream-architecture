@@ -30,8 +30,8 @@ class VisionModel(VisionModelBase):
         Predict the class of the image.
         """
         time.sleep(
-            random.uniform(0.1, 0.25)
-        )  # Simulate processing time between 100ms and 250ms
+            random.uniform(0.05, 0.15)
+        )  # Simulate processing time between 50ms and 150ms
 
         precision = random.uniform(0.1, 0.99)  # Simulate prediction precision
         # people_detected = precision >= 0.8  # Simulate people detection
