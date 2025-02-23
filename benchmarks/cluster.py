@@ -3,7 +3,10 @@ import os
 import pathlib
 import socket
 
+from dotenv import load_dotenv
 from python_on_whales import DockerClient, docker
+
+load_dotenv(dotenv_path=pathlib.Path(__file__).parent / ".env")
 
 # Initialize the Docker swarm on the manager
 try:
@@ -22,6 +25,11 @@ cluster_nodes_ssh = filter(
 for node_ssh in cluster_nodes_ssh:
     # Connect to the worker node via SSH
     node_docker = DockerClient(host=f"ssh://{node_ssh}")
+    # Leave the swarm if already joined
+    try:
+        node_docker.swarm.leave(force=True)
+    except Exception:
+        pass
     # Join the worker node to the swarm
     node_docker.swarm.join(f"{manager_address}:2377", token=worker_join_token)
 

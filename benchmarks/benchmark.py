@@ -1,5 +1,6 @@
 import glob
 import pathlib
+from datetime import datetime
 
 from python_on_whales import docker
 
@@ -10,22 +11,33 @@ if __name__ == "__main__":
     )
     env_file = pathlib.Path(__file__).parent / ".env"
 
-    print("Benchmark files found:", compose_benchmark_files)
+    print("=> Benchmark files found:", compose_benchmark_files, end="\n\n")
 
     # Deploy the stacks in sequence (one by one)
     for compose_benchmark_file in compose_benchmark_files:
-        compose_benchmark_filepath = (
-            pathlib.Path(__file__).parent / compose_benchmark_file
+        compose_filename = pathlib.Path(compose_benchmark_file).name
+
+        option = input(
+            f"=> Do you want to deploy the stack `{compose_filename}`? [y/N/c] "
         )
 
-        print("Deploying stack:", compose_benchmark_file)
+        if option.lower() == "c":
+            # Cancel all deployments
+            break
+
+        if option.lower() != "y":
+            # Skip this deployment
+            continue
+
+        print(f"=> [{datetime.now()}] Deploying stack: {compose_filename}")
         docker.stack.deploy(
-            "arion-benchmark", compose_benchmark_filepath, env_files=[env_file]
+            "arion-benchmark", compose_benchmark_file, env_files=[env_file]
         )
 
-        print("Waiting for stack to complete...")
+        print("=> Waiting for stack to complete...")
         # Wait for the stack to complete (you may need to implement a proper wait mechanism)
-        input("Press Enter after the stack has completed...")
+        input("=> Press Enter after the stack has completed...")
 
         docker.stack.remove("arion-benchmark")
-        print("Stack removed:", compose_benchmark_file)
+        print(f"=> [{datetime.now()}] Stack removed: {compose_filename}")
+        print()

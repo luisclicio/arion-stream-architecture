@@ -6,5 +6,102 @@
     },
     "n_classifiers": 1,
     "n_actuators": 1
+  },
+  {
+    "adapters": [
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" }
+    ],
+    "processors": {
+      "type-a": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" }
+      ]
+    },
+    "n_classifiers": 3,
+    "n_actuators": 3
+  },
+  {
+    "adapters": [
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" }
+    ],
+    "processors": {
+      "type-a": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ]
+    },
+    "n_classifiers": 5,
+    "n_actuators": 5
+  },
+  {
+    "adapters": [
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" }
+    ],
+    "processors": {
+      "type-a": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ],
+      "type-b": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ]
+    },
+    "n_classifiers": 5,
+    "n_actuators": 5
+  },
+  {
+    "adapters": [
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" },
+      { "source_uri": "./videos/blank_video.mp4" }
+    ],
+    "processors": {
+      "type-a": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ],
+      "type-b": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ],
+      "type-c": [
+        { "sender": "stream-adapter-0" },
+        { "sender": "stream-adapter-1" },
+        { "sender": "stream-adapter-2" },
+        { "sender": "stream-adapter-3" },
+        { "sender": "stream-adapter-4" }
+      ]
+    },
+    "n_classifiers": 5,
+    "n_actuators": 5
   }
 ]

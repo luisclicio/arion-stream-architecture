@@ -9,6 +9,9 @@ services:
       RABBITMQ_DEFAULT_PASS: ${BROKER_RABBITMQ_DEFAULT_PASS}
     deploy:
       mode: global
+      placement:
+        constraints:
+        - node.role == manager
   mongodb:
     image: mongo:8
     environment:
@@ -20,6 +23,9 @@ services:
     - mongodb_data:/data/db
     deploy:
       mode: global
+      placement:
+        constraints:
+        - node.role == manager
   stream-adapter-0:
     image: 127.0.0.1:5000/arion-benchmark-adapter
     build: ../services/stream-adapter

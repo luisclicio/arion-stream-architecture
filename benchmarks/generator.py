@@ -29,6 +29,9 @@ def arion_compose_generator(
                 },
                 "deploy": {
                     "mode": "global",
+                    "placement": {
+                        "constraints": ["node.role == manager"],
+                    },
                 },
             },
             "mongodb": {
@@ -41,6 +44,9 @@ def arion_compose_generator(
                 "volumes": ["mongodb_data:/data/db"],
                 "deploy": {
                     "mode": "global",
+                    "placement": {
+                        "constraints": ["node.role == manager"],
+                    },
                 },
             },
         },
