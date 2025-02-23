@@ -1,0 +1,488 @@
+volumes:
+  mongodb_data: {}
+services:
+  broker:
+    image: 127.0.0.1:5000/arion-benchmark-broker
+    build: ../services/broker
+    environment:
+      RABBITMQ_DEFAULT_USER: ${BROKER_RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_RABBITMQ_DEFAULT_PASS}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+        - node.role == manager
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+    - 27017:27017
+    volumes:
+    - mongodb_data:/data/db
+    deploy:
+      mode: global
+      placement:
+        constraints:
+        - node.role == manager
+  stream-adapter-0:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    command: wait-for-it broker:5672 -- python -m src.main
+    environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-0
+      SOURCE_URI: ./videos/blank_video.mp4
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    deploy:
+      restart_policy:
+        condition: none
+  stream-adapter-1:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    command: wait-for-it broker:5672 -- python -m src.main
+    environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-1
+      SOURCE_URI: ./videos/blank_video.mp4
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    deploy:
+      restart_policy:
+        condition: none
+  stream-adapter-2:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    command: wait-for-it broker:5672 -- python -m src.main
+    environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-2
+      SOURCE_URI: ./videos/blank_video.mp4
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    deploy:
+      restart_policy:
+        condition: none
+  stream-adapter-3:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    command: wait-for-it broker:5672 -- python -m src.main
+    environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-3
+      SOURCE_URI: ./videos/blank_video.mp4
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    deploy:
+      restart_policy:
+        condition: none
+  stream-adapter-4:
+    image: 127.0.0.1:5000/arion-benchmark-adapter
+    build: ../services/stream-adapter
+    expose:
+    - '5000'
+    command: wait-for-it broker:5672 -- python -m src.main
+    environment:
+      SERVICE_TYPE: stream-adapter
+      SERVICE_NAME: stream-adapter-4
+      SOURCE_URI: ./videos/blank_video.mp4
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-a-0:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-0:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-0
+      SENDER_URI: stream-adapter-0:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-0
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-a-1:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-1:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-1
+      SENDER_URI: stream-adapter-1:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-1
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-a-2:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-2:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-2
+      SENDER_URI: stream-adapter-2:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-2
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-a-3:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-3:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-3
+      SENDER_URI: stream-adapter-3:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-3
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-a-4:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-4:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-a-4
+      SENDER_URI: stream-adapter-4:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-4
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-b-0:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-0:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-b-0
+      SENDER_URI: stream-adapter-0:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-0
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-b-1:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-1:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-b-1
+      SENDER_URI: stream-adapter-1:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-1
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-b-2:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-2:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-b-2
+      SENDER_URI: stream-adapter-2:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-2
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-b-3:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-3:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-b-3
+      SENDER_URI: stream-adapter-3:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-3
+    deploy:
+      restart_policy:
+        condition: none
+  stream-processor-type-b-4:
+    image: 127.0.0.1:5000/arion-benchmark-processor
+    build: ../services/stream-processors/base
+    command: wait-for-it stream-adapter-4:5000 -- python -m src.main
+    expose:
+    - '5000'
+    environment:
+      SERVICE_TYPE: stream-processor
+      SERVICE_NAME: stream-processor-type-b-4
+      SENDER_URI: stream-adapter-4:5000
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    - stream-adapter-4
+    deploy:
+      restart_policy:
+        condition: none
+  classifier-js-all-0:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-0
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  classifier-js-all-1:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-1
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  classifier-js-all-2:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-2
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  classifier-js-all-3:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-3
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  classifier-js-all-4:
+    image: 127.0.0.1:5000/arion-benchmark-classifier
+    build: ../services/classifiers/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: classifier
+      SERVICE_NAME: classifier-js-all-4
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  actuator-0:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-0
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  actuator-1:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-1
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  actuator-2:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-2
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  actuator-3:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-3
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
+  actuator-4:
+    image: 127.0.0.1:5000/arion-benchmark-actuator
+    build: ../services/actuators/base-js
+    command: wait-for-it broker:5672 -- node index.js
+    environment:
+      SERVICE_TYPE: actuator
+      SERVICE_NAME: actuator-4
+      BROKER_RABBITMQ_CONNECTION_URI: ${BROKER_RABBITMQ_CONNECTION_URI}
+      BROKER_RABBITMQ_EXCHANGE_NAME: ${BROKER_RABBITMQ_EXCHANGE_NAME}
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/
+      LOG_LEVEL: ${LOG_LEVEL}
+      STACK_ID: 5ad_10p_5c_5at
+    depends_on:
+    - broker
+    deploy:
+      restart_policy:
+        condition: none
