@@ -12,3 +12,6 @@ services:
       - mongodb_data:/data/db
     deploy:
       mode: global
+      placement:
+        constraints:
+          - node.role == manager
