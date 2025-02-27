@@ -4,3 +4,4 @@ dist
 .env
 videos/*
 !videos/.gitkeep
+__pycache__
