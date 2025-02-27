@@ -4,6 +4,7 @@ import { logger } from './services/logger.js';
 import { brokerClient } from './services/broker.js';
 import { getSeverityLevel } from './libs/classifier.js';
 import { benchmarkDataSaver } from './services/benchmark.js';
+import { Clock } from './services/clock.js';
 
 async function main() {
   const BROKER_EXCHANGE_NAME = env.BROKER_RABBITMQ_EXCHANGE_NAME;
@@ -30,7 +31,7 @@ async function main() {
     'arion-classifiers-analyses-all',
     async ({ data }) => {
       // NOTE: BENCHMARK POINT
-      const receivedDataTimestamp = new Date();
+      const receivedDataTimestamp = await Clock.now();
       const receivedDataLatency =
         receivedDataTimestamp.getTime() -
         new Date(data.benchmark.processor.sending_data_timestamp).getTime(); // ms
@@ -43,7 +44,7 @@ async function main() {
 
         logger.debug({ severity }, 'Classification made based on analysis');
 
-        const sendingDataTimestamp = new Date();
+        const sendingDataTimestamp = await Clock.now();
         const benchmarkData = {
           adapter: {
             ...data.benchmark.adapter,
@@ -80,7 +81,7 @@ async function main() {
 
         const dataToSave = {
           metadata: {
-            timestamp: new Date(),
+            timestamp: await Clock.now(),
             service_type: env.SERVICE_TYPE,
             stack_id: env.STACK_ID,
           },

@@ -1,11 +1,11 @@
 import json
 import os
-from datetime import datetime
 from time import sleep
 
 import imagezmq
 from src.helpers.logger import get_logger
 from src.services.benchmark import benchmark_data_saver
+from src.services.clock import Clock
 from vidgear.gears import VideoGear
 
 
@@ -62,7 +62,7 @@ class StreamSender:
                 continue
 
             self._image_id += 1
-            sending_image_timestamp = datetime.now()
+            sending_image_timestamp = Clock.now()
             benchmark_data = {
                 "adapter": {
                     "service_name": os.getenv("SERVICE_NAME"),
@@ -86,7 +86,7 @@ class StreamSender:
             )
             data_to_save = {
                 "metadata": {
-                    "timestamp": datetime.now(),
+                    "timestamp": Clock.now(),
                     "service_type": os.getenv("SERVICE_TYPE", "stream-adapter"),
                     "stack_id": os.getenv("STACK_ID"),
                 },

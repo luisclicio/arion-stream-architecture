@@ -9,6 +9,7 @@ import imagezmq
 import numpy as np
 from src.helpers.logger import get_logger
 from src.services.benchmark import benchmark_data_saver
+from src.services.clock import Clock
 
 
 class StreamReceiver:
@@ -156,7 +157,7 @@ class StreamProcessorController:
                 data, image = self._receiver.receive(
                     timeout=60 * 10
                 )  # Timeout for benchmark
-                received_image_timestamp = datetime.now()
+                received_image_timestamp = Clock.now()
                 received_image_latency = (
                     received_image_timestamp
                     - datetime.fromisoformat(
@@ -167,7 +168,7 @@ class StreamProcessorController:
                 if image is None:
                     break
 
-                sending_data_timestamp = datetime.now()
+                sending_data_timestamp = Clock.now()
                 benchmark_data = {
                     **data["benchmark"],
                     "processor": {
@@ -196,7 +197,7 @@ class StreamProcessorController:
                 )
                 data_to_save = {
                     "metadata": {
-                        "timestamp": datetime.now(),
+                        "timestamp": Clock.now(),
                         "service_type": os.getenv("SERVICE_TYPE", "stream-processor"),
                         "stack_id": os.getenv("STACK_ID"),
                     },

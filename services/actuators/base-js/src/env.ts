@@ -18,6 +18,7 @@ export const envSchema = z.object({
   SERVICE_TYPE: z.string().default('actuator'),
   SERVICE_NAME: z.string(),
   STACK_ID: z.string(),
+  CLOCK_URL: z.string().url().optional().default('http://clock:8000'),
 });
 
 export type Env = z.infer<typeof envSchema>;
