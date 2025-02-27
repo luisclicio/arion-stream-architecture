@@ -20,6 +20,16 @@ def arion_compose_generator(
             "mongodb_data": {},
         },
         "services": {
+            "clock": {
+                "image": "127.0.0.1:5000/arion-benchmark-clock",
+                "build": f"{root_path}/services/clock",
+                "deploy": {
+                    "mode": "global",
+                    "placement": {
+                        "constraints": ["node.role == manager"],
+                    },
+                },
+            },
             "broker": {
                 "image": "127.0.0.1:5000/arion-benchmark-broker",
                 "build": f"{root_path}/services/broker",
