@@ -3,6 +3,7 @@ import os
 from time import sleep
 
 import imagezmq
+import simplejpeg
 from src.helpers.logger import get_logger
 from src.services.benchmark import benchmark_data_saver
 from src.services.clock import Clock
@@ -70,7 +71,7 @@ class StreamSender:
                     "sending_image_timestamp": sending_image_timestamp.isoformat(),
                 },
             }
-            self._sender.send_image(
+            self._sender.send_jpg(
                 json.dumps(
                     {
                         "sender_id": self._sender_id,
@@ -78,7 +79,7 @@ class StreamSender:
                         "benchmark": benchmark_data,
                     }
                 ),
-                image,
+                simplejpeg.encode_jpeg(image, quality=90, colorspace="BGR"),
             )
 
             benchmark_data["adapter"]["sending_image_timestamp"] = (

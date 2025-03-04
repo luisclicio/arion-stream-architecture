@@ -7,6 +7,7 @@ from datetime import datetime
 
 import imagezmq
 import numpy as np
+import simplejpeg
 from src.helpers.logger import get_logger
 from src.services.benchmark import benchmark_data_saver
 from src.services.clock import Clock
@@ -42,9 +43,13 @@ class StreamReceiver:
         return self
 
     def receive(self, timeout=15.0) -> tuple[dict, np.ndarray]:
-        """
-        Returns the most recent data (sender ID and image) received from the sender.
-        """
+        data, image = self._get_data(timeout=timeout)
+        image = simplejpeg.decode_jpeg(
+            image, colorspace="BGR", fastdct=True, fastupsample=True
+        )
+        return data, image
+
+    def _get_data(self, timeout=15.0) -> tuple[dict, bytes]:
         if self._prioritize_data:
             try:
                 data = self._queue.get(timeout=timeout)
@@ -71,18 +76,18 @@ class StreamReceiver:
         receiver = imagezmq.ImageHub(f"tcp://{self._sender_uri}", REQ_REP=False)
 
         while not self._stopped:
-            raw_data, image = receiver.recv_image()
+            raw_data, raw_image = receiver.recv_jpg()
 
-            if image is None:
+            if raw_image is None:
                 self.logger.fatal("Received empty image")
                 break
 
             data = json.loads(raw_data)
 
             if self._prioritize_data:
-                self._queue.put((data, image))
+                self._queue.put((data, raw_image))
             else:
-                self._data = (data, image)
+                self._data = (data, raw_image)
                 self._data_ready.set()
 
         receiver.close()
